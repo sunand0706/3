@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leave Management System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #7b61ff, #00c9ff);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 { color: #fff; }
+    .box {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      width: 320px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    label, select, input, button {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    select, input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: #7b61ff;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover { background: #00c9ff; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 5px;
+      text-align: center;
+    }
+    th { background: #7b61ff; color: #fff; }
+  </style>
+</head>
+<body>
+  <h1>Leave Management</h1>
+  <div class="box">
+    <label>Reason</label>
+    <select id="reason">
+      <option value="">--Select--</option>
+      <option>Medical</option>
+      <option>Personal</option>
+      <option>Family</option>
+      <option>Exam</option>
+      <option>Other</option>
+    </select>
+
+    <label>Start Date</label>
+    <input type="date" id="start">
+
+    <label>End Date</label>
+    <input type="date" id="end">
+
+    <p id="duration"><b>Duration:</b> 0 days</p>
+    <button onclick="applyLeave()">Apply Leave</button>
+
+    <p><b>Attendance:</b> <span id="attendance">100</span>%</p>
+
+    <button onclick="toggleHistory()">View History</button>
+    <div id="history" style="display:none;">
+      <table id="table">
+        <tr><th>Reason</th><th>Start</th><th>End</th><th>Days</th></tr>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let leaves = [], totalDays = 90;
+    const reason = document.getElementById('reason'),
+          start = document.getElementById('start'),
+          end = document.getElementById('end'),
+          durationText = document.getElementById('duration'),
+          attendance = document.getElementById('attendance'),
+          table = document.getElementById('table');
+
+    start.onchange = end.onchange = () => {
+      if (start.value && end.value && new Date(end.value) >= new Date(start.value)) {
+        const days = (new Date(end.value) - new Date(start.value)) / 86400000 + 1;
+        durationText.innerHTML = `<b>Duration:</b> ${days} days`;
+      } else durationText.innerHTML = `<b>Duration:</b> 0 days`;
+    };
+
+    function applyLeave() {
+      if (!reason.value || !start.value || !end.value) return alert("Please fill all fields!");
+      const s = new Date(start.value), e = new Date(end.value);
+      if (e < s) return alert("End date cannot be before start date!");
+      const days = (e - s) / 86400000 + 1;
+      leaves.push({reason: reason.value, start: start.value, end: end.value, days});
+      update();
+      clearForm();
+    }
+
+    function update() {
+      const totalLeave = leaves.reduce((a, b) => a + b.days, 0);
+      attendance.textContent = ((totalDays - totalLeave) / totalDays * 100).toFixed(2);
+      table.innerHTML = "<tr><th>Reason</th><th>Start</th><th>End</th><th>Days</th></tr>" +
+        leaves.map(l => `<tr><td>${l.reason}</td><td>${l.start}</td><td>${l.end}</td><td>${l.days}</td></tr>`).join('');
+    }
+
+    function clearForm() {
+      reason.value = start.value = end.value = "";
+      durationText.innerHTML = `<b>Duration:</b> 0 days`;
+    }
+
+    function toggleHistory() {
+      const h = document.getElementById('history');
+      h.style.display = h.style.display === 'none' ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
+
